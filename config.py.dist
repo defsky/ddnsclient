@@ -1,0 +1,26 @@
+#config file
+
+config = {
+    #sleep time for main loop in seconds
+    'sleepTime' : {
+        'updatedMin': 3600,
+        'updatedMax': 7200,
+        'noNeedMin' : 600,
+        'noNeedMax' : 900,
+        'errorMin'  : 10,
+        'errorMax'  : 15,
+    },
+
+    #configuration for dnspod api
+    'url' : 'https://dnsapi.cn/Record.Modify', 
+    'data' : {
+        'login_token'   :'44299,c41b81bd9c4c09ec9c83d4396e517dc9',
+        'format'        :'json',
+        'domain'        :'afkplayer.com',
+        'record_id'     :'341238720',
+        'sub_domain'    :'login',
+        'record_type'   :'A',
+        'record_line_id':'0'
+        # 'value'         :'',
+    },
+}
