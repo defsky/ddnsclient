@@ -3,3 +3,4 @@ config.py
 .swp
 .pyc
 __pycache__
+ips.txt
