@@ -1,6 +1,6 @@
 config.py
 *~
-.swp
-.pyc
+*.swp
+*.pyc
 __pycache__
 ips.txt

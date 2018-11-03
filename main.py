@@ -33,7 +33,7 @@ class Worker(threading.Thread):
                     sleeptime = randint(config['sleepTime']['noNeedMin'], config['sleepTime']['noNeedMax'])
                     print("updating not need, sleep {} seconds".format(sleeptime))
                 else:
-                    self.data['value'] = ip
+                    config['data']['value'] = ip
                     requests.post(config['url'], data=config['data'])
 
                     fd.seek(0)
