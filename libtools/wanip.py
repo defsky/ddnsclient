@@ -22,7 +22,7 @@ class MyHtmlParser(HTMLParser):
             self.tempstr += data
 
 def query():			
-	url = r'http://2018.ip138.com/ic.asp'
+	url = r'http://2019.ip138.com/ic.asp'
 	headers = {'User-Agent':'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.108 Safari/537.36'}
 
 	req = request.Request(url=url, headers = headers)
