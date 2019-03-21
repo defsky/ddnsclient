@@ -4,3 +4,4 @@ config.py
 *.pyc
 __pycache__
 ips.txt
+log/*
