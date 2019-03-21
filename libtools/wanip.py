@@ -2,7 +2,7 @@
 
 from urllib import request
 from html.parser import HTMLParser
-import re
+import re, json
 
 class MyHtmlParser(HTMLParser):
     tempstr = str()
@@ -34,6 +34,17 @@ def query():
 	
 	return parser.liststr
 	
+def getWanIp(url):
+    res = request.urlopen(url)
+    data = json.loads(res.read().decode('utf8'))
+
+    if data['code'] == 0:
+        return data['data']['ip']
+    else:
+        return None
+
+
+
 #for value in liststr:
 #    print(value)
 

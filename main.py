@@ -8,12 +8,30 @@ from config import config
 from random import randint
 from libtools import wanip
 
+import logging
+from logging.handlers import RotatingFileHandler
+
+logfmt = '%(asctime)s [%(levelname)s] %(message)s'
+datefmt = '%Y-%m-%d %H:%M:%S'
+fmtter = logging.Formatter(logfmt,datefmt)
+
+consoleHandler = logging.StreamHandler()
+consoleHandler.setFormatter(fmtter)
+
+fileHandler = RotatingFileHandler('log/ddnsclient.log',maxBytes=1*1024*1024,backupCount=10)
+fileHandler.setFormatter(fmtter)
+
+logger = logging.getLogger('mylogger')
+logger.setLevel(logging.DEBUG)
+logger.addHandler(consoleHandler)
+logger.addHandler(fileHandler)
+
 class Worker(threading.Thread):
     runable = True
     logfile = "ips.txt"
     
     def run(self):
-        print("DDNS Client Started.")
+        logger.info("DDNS Client Started.")
         sleeptime = 120
         while(self.runable):
             try:
@@ -26,12 +44,13 @@ class Worker(threading.Thread):
                 if last_ip[-1:] == '\n':
                     last_ip = last_ip[0:-1]
                 
-                ip = wanip.query()
-                print("{} current ip:{} last ip:{}".format(time.strftime("%Y-%m-%d %H:%M:%S",time.localtime()), ip,last_ip))
+                #ip = wanip.query()
+                ip = wanip.getWanIp('https://www.afkplayer.com/api/get_wan_ip.php')
+                logger.info("wanip:{} last:{}".format(ip, last_ip))
                 
                 if ip == last_ip:
                     sleeptime = randint(config['sleepTime']['noNeedMin'], config['sleepTime']['noNeedMax'])
-                    print("updating not need, sleep {} seconds".format(sleeptime))
+                    logger.info("updating not needed, sleep {} seconds".format(sleeptime))
                 else:
                     config['data']['value'] = ip
                     requests.post(config['url'], data=config['data'])
@@ -40,11 +59,11 @@ class Worker(threading.Thread):
                     fd.write(ip + "\n")
 
                     sleeptime = randint(config['sleepTime']['updatedMin'], config['sleepTime']['updatedMax'])
-                    print("updated success, sleep {} seconds".format(sleeptime))
+                    logger.info("updated success, sleep {} seconds".format(sleeptime))
                     
             except:
                 sleeptime = randint(config['sleepTime']['errorMin'], config['sleepTime']['errorMax'])
-                print("Unkown error, sleep {} seconds".format(sleeptime))
+                logger.error("Unkown error, sleep {} seconds".format(sleeptime))
             finally:
                 fd.close()
                 
@@ -61,4 +80,4 @@ if __name__ == "__main__":
         w1.join()
     except (KeyboardInterrupt, EOFError) as ex:
         w1.stop()
-        print("*** User Quit ***")
+        logger.info("*** User Quit ***")
