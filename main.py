@@ -2,11 +2,12 @@
 
 import requests
 import threading
-import time
+import time, sys
 
 from config import config
 from random import randint
 from libtools import wanip
+from modules.dbutils import DB, DBError
 
 import logging
 from logging.handlers import RotatingFileHandler
@@ -26,6 +27,8 @@ logger.setLevel(logging.DEBUG)
 logger.addHandler(consoleHandler)
 logger.addHandler(fileHandler)
 
+wanipDB = DB('sqlite:database=data/wanip.db')
+
 class Worker(threading.Thread):
     runable = True
     logfile = "ips.txt"
@@ -34,15 +37,21 @@ class Worker(threading.Thread):
         logger.info("DDNS Client Started.")
         sleeptime = 120
         while(self.runable):
-            try:
-                fd = open(self.logfile,'r+')
-            except FileNotFoundError as ex:
-                fd = open(self.logfile,'w+')
+            #try:
+            #    fd = open(self.logfile,'r+')
+            #except FileNotFoundError as ex:
+            #    fd = open(self.logfile,'w+')
                 
             try:
-                last_ip = fd.readline()
-                if last_ip[-1:] == '\n':
-                    last_ip = last_ip[0:-1]
+                #last_ip = fd.readline()
+                ips = wanipDB.query('select ip from used_ip order by id desc limit 1 offset 0')
+                if len(ips) != 0:
+                    last_ip, = ips[0]
+                else:
+                    last_ip = ''
+
+                #if last_ip[-1:] == '\n':
+                #    last_ip = last_ip[0:-1]
                 
                 #ip = wanip.query()
                 ip = wanip.getWanIp('https://www.afkplayer.com/api/get_wan_ip.php')
@@ -55,17 +64,22 @@ class Worker(threading.Thread):
                     config['data']['value'] = ip
                     requests.post(config['url'], data=config['data'])
 
-                    fd.seek(0)
-                    fd.write(ip + "\n")
+                    wanipDB.execute("insert into used_ip values(NULL, '{}','{}')".format(ip, time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())))
+
+                    #fd.seek(0)
+                    #fd.write(ip + "\n")
 
                     sleeptime = randint(config['sleepTime']['updatedMin'], config['sleepTime']['updatedMax'])
                     logger.info("updated success, sleep {} seconds".format(sleeptime))
-                    
+            except DBError:
+                logger.error("DB Error Occured!")
+                sleeptime = 3
             except:
                 sleeptime = randint(config['sleepTime']['errorMin'], config['sleepTime']['errorMax'])
-                logger.error("Unkown error, sleep {} seconds".format(sleeptime))
+                logger.error("Unkown error, sleep {} seconds,{}".format(sleeptime,sys.exc_info()[0]))
             finally:
-                fd.close()
+                #fd.close()
+                pass
                 
             time.sleep(sleeptime)
         
